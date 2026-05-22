@@ -325,7 +325,20 @@ This uses the `mcp-remote` package to bridge local STDIO-based IDEs to a remote 
 | `MEDUSA_API_KEY_BASE64` | No | API key | Set `true` for legacy base64 Basic auth encoding | `false` |
 | `MEDUSA_JWT` | Auth-dependent | JWT | JWT token for bearer auth | `eyJ...` |
 | `MEDUSA_SESSION_COOKIE` | Auth-dependent | Session | Admin session cookie | `connect.sid=...` |
+| `MCP_AUTH_MODE` | No | HTTP | `static` for `MCP_AUTH_TOKEN`, or `oauth` for OAuth 2.1 JWT validation | `static` |
 | `MCP_AUTH_TOKEN` | Remote only | HTTP | Token for client authentication | `openssl rand -base64 32` |
+| `MCP_RESOURCE_URL` | OAuth | HTTP | Public MCP server URL used in OAuth protected resource metadata | `https://mcp.example.com` |
+| `OAUTH_ISSUER` | OAuth | HTTP | Expected JWT issuer and authorization server URL | `https://issuer.example.com` |
+| `OAUTH_AUDIENCE` | OAuth | HTTP | Expected JWT audience | `https://mcp.example.com` |
+| `OAUTH_JWKS_URI` | OAuth | HTTP | JWKS URL used to verify access tokens | `https://issuer.example.com/.well-known/jwks.json` |
+| `OAUTH_REQUIRED_SCOPES` | OAuth | HTTP | Space or comma separated scopes required on access tokens | `mcp:access` |
+
+### OAuth 2.1 for Remote MCP
+
+Set `MCP_AUTH_MODE=oauth` to protect the HTTP MCP endpoints with OAuth 2.1 bearer tokens instead of a shared static token. The server validates JWT access tokens against `OAUTH_JWKS_URI`, checks optional `OAUTH_ISSUER`, `OAUTH_AUDIENCE`, and `OAUTH_REQUIRED_SCOPES`, and exposes discovery metadata at:
+
+- `/.well-known/oauth-protected-resource`
+- `/.well-known/oauth-authorization-server`
 
 ### Getting Your Medusa API Key
 

@@ -46,7 +46,7 @@ Used for web applications and remote IDE connections via mcp-remote.
 
 **Entry Point:** `server/index.js`
 **Protocol Version:** 2025-03-26 (Streamable HTTP)
-**Authentication:** Bearer token (MCP_AUTH_TOKEN)
+**Authentication:** Bearer token (`MCP_AUTH_TOKEN`) or OAuth 2.1 JWT validation (`MCP_AUTH_MODE=oauth`)
 
 ## Directory Structure
 

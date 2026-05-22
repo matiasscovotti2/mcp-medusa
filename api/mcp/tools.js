@@ -61,9 +61,11 @@ async function toolsHandler(req, res) {
   }
   
   // Authenticate request
-  if (!authenticateRequest(req)) {
-    return res.status(HTTP_STATUS.UNAUTHORIZED)
-      .json(createJsonRpcError(null, JSON_RPC_ERRORS.INVALID_REQUEST, 'Unauthorized'));
+  const authResult = await authenticateRequest(req);
+  if (!authResult.ok) {
+    Object.entries(authResult.headers || {}).forEach(([key, value]) => res.setHeader(key, value));
+    return res.status(authResult.status || HTTP_STATUS.UNAUTHORIZED)
+      .json(createJsonRpcError(null, JSON_RPC_ERRORS.INVALID_REQUEST, authResult.message || 'Unauthorized'));
   }
   
   try {

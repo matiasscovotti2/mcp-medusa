@@ -17,6 +17,14 @@
     "api/mcp/metrics.js": {
       "maxDuration": 10,
       "memory": 512
+    },
+    "api/oauth-protected-resource.js": {
+      "maxDuration": 10,
+      "memory": 512
+    },
+    "api/oauth-authorization-server.js": {
+      "maxDuration": 10,
+      "memory": 512
     }
   },
   "headers": [
@@ -43,6 +51,14 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/.well-known/oauth-protected-resource",
+      "destination": "/api/oauth-protected-resource"
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server",
+      "destination": "/api/oauth-authorization-server"
+    },
     {
       "source": "/mcp/(.*)",
       "destination": "/api/mcp/$1"

@@ -11,7 +11,8 @@
  *
  * Environment Variables:
  *   PORT - Server port (default: 3000)
- *   MCP_AUTH_TOKEN - Bearer token for authentication (required)
+ *   MCP_AUTH_MODE - "static" for MCP_AUTH_TOKEN or "oauth" for OAuth 2.1 JWT validation
+ *   MCP_AUTH_TOKEN - Bearer token for static authentication
  *   MEDUSA_BASE_URL - Medusa backend URL (required)
  *   MEDUSA_API_KEY - Medusa API key (required)
  */
@@ -22,6 +23,7 @@ import { createStreamableHTTPHandler } from './transports/streamable-http.js';
 import { authMiddleware, corsMiddleware, requestLogger } from './middleware/auth.js';
 import { discoverTools, transformToolsToMcp, executeToolOptimized } from '../lib/tools.js';
 import { MCP_VERSION_HTTP, SERVER_INFO } from '../lib/constants.js';
+import { getAuthorizationServerMetadata, getProtectedResourceMetadata } from '../lib/oauth.js';
 
 // Load environment variables
 config();
@@ -39,8 +41,11 @@ if (missingVars.length > 0) {
   process.exit(1);
 }
 
-// Warn if MCP_AUTH_TOKEN is not set
-if (!process.env.MCP_AUTH_TOKEN) {
+// Warn if authentication is not configured
+if ((process.env.MCP_AUTH_MODE || 'static').toLowerCase() === 'oauth' && !process.env.OAUTH_JWKS_URI && !process.env.OAUTH_JWKS_JSON) {
+  console.warn('WARNING: MCP_AUTH_MODE=oauth but neither OAUTH_JWKS_URI nor OAUTH_JWKS_JSON is set.');
+  console.warn('OAuth authenticated requests will fail until JWKS configuration is provided.');
+} else if (!process.env.MCP_AUTH_TOKEN && (process.env.MCP_AUTH_MODE || 'static').toLowerCase() !== 'oauth') {
   console.warn('WARNING: MCP_AUTH_TOKEN not set. Authentication will fail for all requests.');
   console.warn('Set MCP_AUTH_TOKEN in your environment to enable authenticated access.');
 }
@@ -87,6 +92,14 @@ app.get('/ready', async (req, res) => {
       error: error.message
     });
   }
+});
+
+app.get('/.well-known/oauth-protected-resource', (req, res) => {
+  res.json(getProtectedResourceMetadata(req));
+});
+
+app.get('/.well-known/oauth-authorization-server', (req, res) => {
+  res.json(getAuthorizationServerMetadata(req));
 });
 
 // MCP endpoint with authentication (Streamable HTTP - main endpoint)
@@ -136,7 +149,7 @@ app.listen(PORT, () => {
 ║  Environment:                                                    ║
 ║    MEDUSA_BASE_URL: ${process.env.MEDUSA_BASE_URL ? 'configured' : 'MISSING'}                                    ║
 ║    MEDUSA_API_KEY:  ${process.env.MEDUSA_API_KEY ? 'configured' : 'MISSING'}                                    ║
-║    MCP_AUTH_TOKEN:  ${process.env.MCP_AUTH_TOKEN ? 'configured' : 'NOT SET (auth will fail)'}                  ║
+║    MCP_AUTH_MODE:   ${(process.env.MCP_AUTH_MODE || 'static').padEnd(45)}║
 ╚══════════════════════════════════════════════════════════════════╝
   `);
 });

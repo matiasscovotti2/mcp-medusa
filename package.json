@@ -55,6 +55,7 @@
     "cors": "^2.8.5",
     "dotenv": "16.4.7",
     "express": "^4.21.0",
+    "jose": "^6.2.3",
     "zod": "^4.0.0"
   },
   "engines": {
@@ -69,8 +70,7 @@
     "@vercel/node": "^5.3.13",
     "typescript": "^5.9.2",
     "vercel": "^46.0.2"
-  }
-  ,
+  },
   "publishConfig": {
     "access": "public"
   }

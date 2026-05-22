@@ -131,13 +131,18 @@ const handler = async (req, res) => {
     }
 
     // Fast authentication check
-    if (!authenticateRequest(req)) {
+    const authResult = await authenticateRequest(req);
+    if (!authResult.ok) {
       const duration = requestTimer.end();
+      const headers = {
+        ...corsHeaders,
+        ...(authResult.headers || {}),
+      };
       return new Response(
-        JSON.stringify(createJsonRpcError(null, JSON_RPC_ERRORS.INVALID_REQUEST, 'Unauthorized')),
+        JSON.stringify(createJsonRpcError(null, JSON_RPC_ERRORS.INVALID_REQUEST, authResult.message || 'Unauthorized')),
         {
-          status: HTTP_STATUS.UNAUTHORIZED,
-          headers: corsHeaders,
+          status: authResult.status || HTTP_STATUS.UNAUTHORIZED,
+          headers,
         }
       );
     }

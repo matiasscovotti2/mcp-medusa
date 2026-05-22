@@ -25,8 +25,13 @@ async function metricsHandler(req, res) {
   }
   
   // Authenticate request
-  if (!authenticateRequest(req)) {
-    return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: 'Unauthorized' });
+  const authResult = await authenticateRequest(req);
+  if (!authResult.ok) {
+    Object.entries(authResult.headers || {}).forEach(([key, value]) => res.setHeader(key, value));
+    return res.status(authResult.status || HTTP_STATUS.UNAUTHORIZED).json({
+      error: authResult.status === 403 ? 'Forbidden' : 'Unauthorized',
+      message: authResult.message || 'Unauthorized'
+    });
   }
   
   try {

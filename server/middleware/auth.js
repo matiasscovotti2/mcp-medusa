@@ -2,8 +2,9 @@
  * Authentication middleware for MCP HTTP server
  *
  * Implements Bearer token authentication as specified in MCP spec.
- * Uses MCP_AUTH_TOKEN environment variable for validation.
+ * Uses MCP_AUTH_TOKEN or OAuth 2.1 access tokens depending on MCP_AUTH_MODE.
  */
+import { authenticateRequest, sendAuthFailure } from '../../lib/auth.js';
 
 /**
  * Bearer token authentication middleware
@@ -11,7 +12,7 @@
  * @param {Object} res - Express response
  * @param {Function} next - Next middleware
  */
-export function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
   // Skip auth for health check
   if (req.path === '/health' || req.path === '/ready') {
     return next();
@@ -22,41 +23,9 @@ export function authMiddleware(req, res, next) {
     return next();
   }
 
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Missing Authorization header'
-    });
-  }
-
-  // Extract Bearer token
-  const [scheme, token] = authHeader.split(' ');
-
-  if (scheme?.toLowerCase() !== 'bearer' || !token) {
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Invalid Authorization header format. Expected: Bearer <token>'
-    });
-  }
-
-  // Validate token against environment variable
-  const expectedToken = process.env.MCP_AUTH_TOKEN;
-
-  if (!expectedToken) {
-    console.error('MCP_AUTH_TOKEN environment variable not set');
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Server authentication not configured'
-    });
-  }
-
-  if (token !== expectedToken) {
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Invalid token'
-    });
+  const authResult = await authenticateRequest(req);
+  if (!authResult.ok) {
+    return sendAuthFailure(res, authResult);
   }
 
   // Token is valid
