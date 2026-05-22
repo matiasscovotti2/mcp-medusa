@@ -1,6 +1,6 @@
 {
   "name": "mcp-medusa",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "MCP server for MedusaJS e-commerce backend operations. Supports local STDIO and remote Streamable HTTP transport.",
   "main": "index.js",
   "bin": {
@@ -38,6 +38,8 @@
     "start:http": "node server/index.js",
     "start:do": "node server/index.js",
     "test:http": "node test-http-transport.js",
+    "test:unit": "node --test test/unit/*.test.js",
+    "coverage:medusa": "node scripts/medusa-openapi-coverage.js",
     "deploy": "vercel --prod",
     "type-check": "tsc --noEmit",
     "benchmark": "node benchmark/performance-test.js",
@@ -46,12 +48,14 @@
     "performance": "npm run benchmark && npm run load-test"
   },
   "dependencies": {
-    "@medusajs/medusa-js": "6.1.10",
-    "@modelcontextprotocol/sdk": "^1.9.0",
+    "@medusajs/js-sdk": "2.15.3",
+    "@medusajs/types": "2.15.3",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "13.1.0",
     "cors": "^2.8.5",
     "dotenv": "16.4.7",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "zod": "^4.0.0"
   },
   "engines": {
     "npm": ">=8.0.0",

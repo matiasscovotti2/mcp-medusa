@@ -3,7 +3,7 @@
 
 import dotenv from 'dotenv';
 import { authenticateRequest, applyCorsHeaders, handleCorsOptions } from '../../lib/auth.js';
-import { SERVER_INFO, CAPABILITIES, MCP_VERSION, HTTP_STATUS } from '../../lib/constants.js';
+import { SERVER_INFO, CAPABILITIES, MCP_VERSION_HTTP, HTTP_STATUS } from '../../lib/constants.js';
 import { withPerformanceMonitoring } from '../../lib/performance.js';
 
 // Initialize environment once
@@ -13,7 +13,7 @@ dotenv.config();
 const CAPABILITIES_RESPONSE = {
   server: SERVER_INFO,
   capabilities: CAPABILITIES,
-  protocolVersion: MCP_VERSION,
+  protocolVersion: MCP_VERSION_HTTP,
   transport: 'http'
 };
 

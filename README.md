@@ -9,7 +9,7 @@ A comprehensive **Model Context Protocol (MCP) server** that provides automated 
 ## 🚀 Features
 
 ### Complete Admin API Coverage
-This MCP server provides **14 comprehensive admin tools** covering all major Medusa.js operations:
+This MCP server provides **15 admin tools** covering Medusa's core Admin API plus an additive Medusa v2 coverage tool:
 
 - **🛍️ Products Management** - Products, variants, categories, tags, types
 - **📦 Orders Management** - List, get, cancel, complete, archive, transfer, fulfillment
@@ -320,7 +320,11 @@ This uses the `mcp-remote` package to bridge local STDIO-based IDEs to a remote 
 | Variable | Required | Mode | Description | Example |
 |----------|----------|------|-------------|---------|
 | `MEDUSA_BASE_URL` | Yes | All | Your Medusa backend URL | `http://localhost:9000` |
-| `MEDUSA_API_KEY` | Yes | All | Admin API key or JWT token | `sk_admin_...` |
+| `MEDUSA_AUTH_TYPE` | No | All | `api-key`, `jwt`, or `session` | `api-key` |
+| `MEDUSA_API_KEY` | Auth-dependent | All | Admin API key, or JWT token when `MEDUSA_AUTH_TYPE=jwt` | `sk_admin_...` |
+| `MEDUSA_API_KEY_BASE64` | No | API key | Set `true` for legacy base64 Basic auth encoding | `false` |
+| `MEDUSA_JWT` | Auth-dependent | JWT | JWT token for bearer auth | `eyJ...` |
+| `MEDUSA_SESSION_COOKIE` | Auth-dependent | Session | Admin session cookie | `connect.sid=...` |
 | `MCP_AUTH_TOKEN` | Remote only | HTTP | Token for client authentication | `openssl rand -base64 32` |
 
 ### Getting Your Medusa API Key
@@ -414,6 +418,7 @@ After configuring Claude Desktop:
 | `manage_medusa_admin_taxes` | Tax management | `list_tax_rates`, `list_tax_regions`, `create_tax_rate` |
 | `manage_medusa_admin_sales_channels` | Sales channel management | `list`, `get`, `create`, `add_products` |
 | `manage_medusa_admin_users` | User & auth management | `list_users`, `list_invites`, `list_api_keys` |
+| `manage_medusa_admin_v2` | Additive Medusa v2 Admin API coverage | `list`, `get`, `request` |
 
 ## 🧪 Testing with Claude
 

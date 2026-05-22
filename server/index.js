@@ -21,7 +21,7 @@ import { config } from 'dotenv';
 import { createStreamableHTTPHandler } from './transports/streamable-http.js';
 import { authMiddleware, corsMiddleware, requestLogger } from './middleware/auth.js';
 import { discoverTools, transformToolsToMcp, executeToolOptimized } from '../lib/tools.js';
-import { SERVER_INFO } from '../lib/constants.js';
+import { MCP_VERSION_HTTP, SERVER_INFO } from '../lib/constants.js';
 
 // Load environment variables
 config();
@@ -52,9 +52,9 @@ const mcpHandler = createStreamableHTTPHandler({
   executeToolOptimized,
   serverInfo: {
     name: SERVER_INFO.name,
-    version: '1.0.5'
+    version: SERVER_INFO.version
   },
-  protocolVersion: '2025-03-26'
+  protocolVersion: MCP_VERSION_HTTP
 });
 
 // Middleware
@@ -66,9 +66,9 @@ app.use(requestLogger);
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    version: '1.0.5',
+    version: SERVER_INFO.version,
     transport: 'streamable-http',
-    protocolVersion: '2025-03-26'
+    protocolVersion: MCP_VERSION_HTTP
   });
 });
 

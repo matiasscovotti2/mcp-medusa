@@ -18,8 +18,8 @@ export function registerToolsCommand(program) {
       const groupedTools = tools.reduce((acc, tool) => {
         // Extract workspace and collection from path
         const parts = tool.path.split("/");
-        const workspace = parts[1] || "Unknown Workspace";
-        const collection = parts[2] || "Unknown Collection";
+        const workspace = parts[0] || "Unknown Workspace";
+        const collection = parts[1] || "Unknown Collection";
 
         if (!acc[workspace]) acc[workspace] = {};
         if (!acc[workspace][collection]) acc[workspace][collection] = [];

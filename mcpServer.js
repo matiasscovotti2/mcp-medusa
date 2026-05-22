@@ -9,7 +9,8 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
-import { discoverTools } from "./lib/tools.js";
+import { discoverTools, executeToolOptimized, transformToolsToMcp } from "./lib/tools.js";
+import { SERVER_INFO } from "./lib/constants.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -19,58 +20,26 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-const SERVER_NAME = "medusa-admin-mcp-server";
-
-async function transformTools(tools) {
-  return tools
-    .map((tool) => {
-      const definition = tool.definition;
-      if (!definition) return;
-      return {
-        name: definition.name,
-        description: definition.description,
-        inputSchema: definition.parameters,
-      };
-    })
-    .filter(Boolean);
-}
+const SERVER_NAME = SERVER_INFO.name;
 
 async function setupServerHandlers(server, tools) {
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: await transformTools(tools),
+    tools: transformToolsToMcp(tools),
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const toolName = request.params.name;
-    const tool = tools.find((t) => t.definition.name === toolName);
-    if (!tool) {
+    if (!tools.some((tool) => tool.definition?.name === toolName)) {
       throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
     }
-    const args = request.params.arguments;
-    const requiredParameters =
-      tool.definition?.parameters?.required || [];
-    for (const requiredParameter of requiredParameters) {
-      if (!(requiredParameter in args)) {
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          `Missing required parameter: ${requiredParameter}`
-        );
-      }
-    }
     try {
-      const result = await tool.function(args);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
+      return await executeToolOptimized(tools, toolName, request.params.arguments || {});
     } catch (error) {
       console.error("[Error] Failed to fetch data:", error);
       throw new McpError(
-        ErrorCode.InternalError,
+        error.message?.startsWith("Missing required parameter")
+          ? ErrorCode.InvalidParams
+          : ErrorCode.InternalError,
         `API error: ${error.message}`
       );
     }
@@ -87,7 +56,7 @@ async function run() {
   const server = new Server(
     {
       name: SERVER_NAME,
-      version: "0.1.0",
+      version: SERVER_INFO.version,
     },
     {
       capabilities: {

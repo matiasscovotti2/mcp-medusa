@@ -4,7 +4,7 @@
 import { discoverTools, transformToolsToMcp, executeToolOptimized } from '../../lib/tools.js';
 import { authenticateRequest, corsHeaders } from '../../lib/auth.js';
 import { createJsonRpcResponse, createJsonRpcError, parseJsonRpcRequest, JSON_RPC_ERRORS } from '../../lib/jsonrpc.js';
-import { MCP_VERSION, SERVER_INFO, CAPABILITIES, HTTP_STATUS } from '../../lib/constants.js';
+import { MCP_VERSION_HTTP, SERVER_INFO, CAPABILITIES, HTTP_STATUS } from '../../lib/constants.js';
 import { withPerformanceMonitoring, PerformanceTimer } from '../../lib/performance.js';
 import dotenv from 'dotenv';
 
@@ -15,12 +15,12 @@ dotenv.config();
 const HEALTH_CHECK_RESPONSE = {
   server: SERVER_INFO,
   capabilities: CAPABILITIES,
-  protocolVersion: MCP_VERSION,
+  protocolVersion: MCP_VERSION_HTTP,
   transport: 'http',
 };
 
 const INITIALIZE_RESPONSE = {
-  protocolVersion: MCP_VERSION,
+  protocolVersion: MCP_VERSION_HTTP,
   capabilities: CAPABILITIES,
   serverInfo: SERVER_INFO
 };
@@ -201,3 +201,18 @@ const handler = async (req, res) => {
 // Export optimized handlers with performance monitoring
 const optimizedHandler = withPerformanceMonitoring('mcp-main', handler);
 export { optimizedHandler as GET, optimizedHandler as POST, optimizedHandler as OPTIONS };
+
+export default async function vercelHandler(req, res) {
+  const response = await optimizedHandler(req, res);
+
+  if (response instanceof Response) {
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    res.status(response.status);
+    const text = await response.text();
+    return text ? res.send(text) : res.end();
+  }
+
+  return response;
+}

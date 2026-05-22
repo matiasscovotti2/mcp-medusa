@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Medusa.js MCP (Model Context Protocol) server that provides automated API tools for Medusa e-commerce backend operations. It focuses on admin API functionality including order management, cart operations, and fulfillment processing.
 
-**Version:** 1.0.4
+**Version:** 1.1.0
 **Supports:** Local STDIO (npx) and Remote Streamable HTTP (Digital Ocean)
 
 ## Architecture

@@ -12,7 +12,7 @@ GET /health
 ```json
 {
   "status": "ok",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "transport": "streamable-http",
   "protocolVersion": "2025-03-26"
 }
@@ -71,7 +71,7 @@ Initialize the MCP session.
     "protocolVersion": "2025-03-26",
     "serverInfo": {
       "name": "medusa-admin-mcp-server",
-      "version": "1.0.4"
+      "version": "1.1.0"
     },
     "capabilities": {
       "tools": {}

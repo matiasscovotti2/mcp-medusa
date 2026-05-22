@@ -5,6 +5,8 @@ const BaseListSchema = z.object({
   limit: z.number().optional().describe('Maximum number of items to return (default: 20)'),
   offset: z.number().optional().describe('Number of items to skip (default: 0)'),
   q: z.string().optional().describe('Search query string'),
+  fields: z.string().optional().describe('Medusa v2 fields selector, including relation selectors such as *variants'),
+  order: z.string().optional().describe('Sort order, for example created_at or -created_at'),
 });
 
 const BaseIdSchema = z.object({
@@ -12,7 +14,7 @@ const BaseIdSchema = z.object({
 });
 
 const BaseMetadataSchema = z.object({
-  metadata: z.record(z.any()).optional().describe('Additional metadata'),
+  metadata: z.record(z.string(), z.any()).optional().describe('Additional metadata'),
 });
 
 // Orders tool schema
@@ -50,8 +52,8 @@ export const DraftOrdersSchema = z.object({
   customer_id: z.string().optional().describe('Customer ID.'),
   region_id: z.string().optional().describe('Region ID.'),
   currency_code: z.string().optional().describe('Currency code.'),
-  shipping_address: z.record(z.any()).optional().describe('Shipping address object.'),
-  billing_address: z.record(z.any()).optional().describe('Billing address object.'),
+  shipping_address: z.record(z.string(), z.any()).optional().describe('Shipping address object.'),
+  billing_address: z.record(z.string(), z.any()).optional().describe('Billing address object.'),
   items: z.array(z.object({
     variant_id: z.string(),
     quantity: z.number()
@@ -76,10 +78,10 @@ export const ProductsSchema = z.object({
   type: z.string().optional().describe('Product type.'),
   tags: z.array(z.string()).optional().describe('Product tags.'),
   categories: z.array(z.string()).optional().describe('Product categories.'),
-  images: z.array(z.record(z.any())).optional().describe('Product images.'),
-  options: z.array(z.record(z.any())).optional().describe('Product options.'),
-  variants: z.array(z.record(z.any())).optional().describe('Product variants.'),
-  variant_data: z.record(z.any()).optional().describe('Variant data for create/update operations.'),
+  images: z.array(z.record(z.string(), z.any())).optional().describe('Product images.'),
+  options: z.array(z.record(z.string(), z.any())).optional().describe('Product options.'),
+  variants: z.array(z.record(z.string(), z.any())).optional().describe('Product variants.'),
+  variant_data: z.record(z.string(), z.any()).optional().describe('Variant data for create/update operations.'),
   category_id: z.array(z.string()).optional().describe('Filter by category IDs.'),
   tag_id: z.array(z.string()).optional().describe('Filter by tag IDs.'),
   type_id: z.array(z.string()).optional().describe('Filter by type IDs.'),
@@ -98,10 +100,10 @@ export const CustomersSchema = z.object({
   last_name: z.string().optional().describe('Customer last name.'),
   phone: z.string().optional().describe('Customer phone number.'),
   address_id: z.string().optional().describe('Address ID (required for address-specific operations).'),
-  address_data: z.record(z.any()).optional().describe('Address data for create/update operations.'),
+  address_data: z.record(z.string(), z.any()).optional().describe('Address data for create/update operations.'),
   group_id: z.string().optional().describe('Customer group ID (required for group operations).'),
   group_name: z.string().optional().describe('Customer group name.'),
-  group_metadata: z.record(z.any()).optional().describe('Customer group metadata.'),
+  group_metadata: z.record(z.string(), z.any()).optional().describe('Customer group metadata.'),
   created_at: z.string().optional().describe('Filter by creation date.'),
   updated_at: z.string().optional().describe('Filter by update date.'),
 }).merge(BaseListSchema).merge(BaseMetadataSchema);
@@ -134,7 +136,7 @@ export const InventorySchema = z.object({
   material: z.string().optional().describe('Item material.'),
   location_id: z.string().optional().describe('Stock location ID.'),
   name: z.string().optional().describe('Stock location name.'),
-  address: z.record(z.any()).optional().describe('Location address.'),
+  address: z.record(z.string(), z.any()).optional().describe('Location address.'),
   inventory_item_id: z.string().optional().describe('Inventory item ID for levels/reservations.'),
   stocked_quantity: z.number().optional().describe('Stocked quantity.'),
   incoming_quantity: z.number().optional().describe('Incoming quantity.'),
@@ -166,7 +168,7 @@ export const RegionsSchema = z.object({
   is_return: z.boolean().optional().describe('Whether this is a return option.'),
   profile_id: z.string().optional().describe('Shipping profile ID.'),
   type: z.string().optional().describe('Profile/set type.'),
-  data: z.record(z.any()).optional().describe('Additional data.'),
+  data: z.record(z.string(), z.any()).optional().describe('Additional data.'),
   fulfillment_set_id: z.string().optional().describe('Fulfillment set ID.'),
 }).merge(BaseListSchema).merge(BaseMetadataSchema);
 
@@ -187,10 +189,10 @@ export const PricingSchema = z.object({
   code: z.string().optional().describe('Promotion code.'),
   is_automatic: z.boolean().optional().describe('Whether promotion is automatic.'),
   rules: z.array(z.any()).optional().describe('Promotion rules.'),
-  application_method: z.record(z.any()).optional().describe('Application method.'),
+  application_method: z.record(z.string(), z.any()).optional().describe('Application method.'),
   campaign_id: z.string().optional().describe('Campaign ID.'),
   campaign_identifier: z.string().optional().describe('Campaign identifier.'),
-  budget: z.record(z.any()).optional().describe('Campaign budget.'),
+  budget: z.record(z.string(), z.any()).optional().describe('Campaign budget.'),
 }).merge(BaseListSchema);
 
 // Payments tool schema
@@ -251,7 +253,7 @@ export const TaxesSchema = z.object({
   country_code: z.string().optional().describe('Country code.'),
   province_code: z.string().optional().describe('Province/state code.'),
   parent_id: z.string().optional().describe('Parent tax region ID.'),
-  default_tax_rate: z.record(z.any()).optional().describe('Default tax rate configuration.'),
+  default_tax_rate: z.record(z.string(), z.any()).optional().describe('Default tax rate configuration.'),
 }).merge(BaseListSchema).merge(BaseMetadataSchema);
 
 // Sales Channels tool schema
@@ -280,6 +282,36 @@ export const UsersSchema = z.object({
   type: z.string().optional().describe('API key type.'),
 }).merge(BaseListSchema).merge(BaseMetadataSchema);
 
+export const AdminV2Schema = z.object({
+  action: z.enum(['list', 'get', 'request']).describe('The Medusa v2 Admin API action to perform.'),
+  resource: z.enum([
+    'auth',
+    'currencies',
+    'feature_flags',
+    'index',
+    'locales',
+    'notifications',
+    'price_preferences',
+    'property_labels',
+    'refund_reasons',
+    'return_reasons',
+    'shipping_option_types',
+    'stores',
+    'store_credit_accounts',
+    'tax_providers',
+    'translations',
+    'uploads',
+    'views',
+    'workflow_executions',
+  ]).optional().describe('Known Medusa v2 Admin API resource for list/get actions.'),
+  id: z.string().optional().describe('Resource ID for get actions.'),
+  method: z.enum(['GET', 'POST', 'PATCH', 'DELETE']).optional().describe('HTTP method for request actions.'),
+  path: z.string().optional().describe('Explicit /admin/* or /auth* path for request actions.'),
+  query: z.record(z.string(), z.any()).optional().describe('Query parameters serialized with Medusa v2 rules.'),
+  body: z.record(z.string(), z.any()).optional().describe('JSON request body.'),
+  headers: z.record(z.string(), z.any()).optional().describe('Additional request headers.'),
+});
+
 // Export all schemas in a map for easy access
 export const ToolSchemas = {
   'manage_medusa_admin_orders': OrdersSchema,
@@ -296,6 +328,7 @@ export const ToolSchemas = {
   'manage_medusa_admin_taxes': TaxesSchema,
   'manage_medusa_admin_sales_channels': SalesChannelsSchema,
   'manage_medusa_admin_users': UsersSchema,
+  'manage_medusa_admin_v2': AdminV2Schema,
 } as const;
 
 export type ToolName = keyof typeof ToolSchemas;

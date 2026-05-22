@@ -3,37 +3,7 @@
  * Supports CRUD operations for product collections
  */
 
-import { Buffer } from "buffer";
-
-// Utility function to normalize base URL by removing trailing slashes
-function normalizeBaseUrl(url) {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
-}
-
-// Utility function to create proper headers for Medusa API
-function createHeaders(apiKey) {
-  return {
-    'Authorization': `Basic ${Buffer.from(`${apiKey}:`).toString("base64")}`,
-    'Content-Type': 'application/json'
-  };
-}
-
-// Utility function to make API requests
-async function makeRequest(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers
-    }
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
-  }
-  
-  return await response.json();
-}
+import { createHeaders, hasMedusaCredentials, makeRequest, missingCredentialsMessage, normalizeBaseUrl } from "../../lib/medusa-client.js";
 
 /**
  * Main function to handle all collection-related operations.
@@ -54,10 +24,10 @@ async function makeRequest(url, options = {}) {
 async function handleCollectionsOperation(args) {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!apiKey) {
-    throw new Error('MEDUSA_API_KEY environment variable is required');
+  if (!apiKey || !hasMedusaCredentials()) {
+    throw new Error(missingCredentialsMessage());
   }
 
   const cleanBaseUrl = baseUrl;

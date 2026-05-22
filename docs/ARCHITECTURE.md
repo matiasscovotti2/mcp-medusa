@@ -277,3 +277,4 @@ npm run dev:http
 | 1.0.3 | Added Vercel HTTP support |
 | 1.0.4 | Added Streamable HTTP, Digital Ocean support, mcp-remote compatibility |
 | 1.0.5 | Removed legacy SSE transport, simplified to Streamable HTTP only |
+| 1.1.0 | Added Medusa v2.15 auth modes, shared client, coverage tooling, and additive v2 Admin API tool |

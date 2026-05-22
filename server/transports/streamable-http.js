@@ -26,7 +26,7 @@ export class StreamableHTTPHandler {
     this.discoverTools = options.discoverTools;
     this.transformToolsToMcp = options.transformToolsToMcp;
     this.executeToolOptimized = options.executeToolOptimized;
-    this.serverInfo = options.serverInfo || { name: 'mcp-medusa', version: '1.0.4' };
+    this.serverInfo = options.serverInfo || { name: 'mcp-medusa', version: '1.1.0' };
     this.protocolVersion = options.protocolVersion || '2025-03-26';
 
     // Cleanup expired sessions periodically

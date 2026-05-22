@@ -463,7 +463,7 @@ async function testMedusaTools() {
     }
     
     // Test Draft Orders Management Tool
-    const draftOrdersTool = tools.find(t => t.definition.function.name === 'manage_medusa_admin_draft_orders');
+    const draftOrdersTool = tools.find(t => t.definition.name === 'manage_medusa_admin_draft_orders');
     if (draftOrdersTool) {
       await testDraftOrdersManagementTool(draftOrdersTool);
     } else {

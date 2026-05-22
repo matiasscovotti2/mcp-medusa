@@ -3,42 +3,7 @@
  * Supports CRUD operations and special actions for orders using optimized fetch approach
  */
 
-import { Buffer } from "buffer";
-
-// Utility function to normalize base URL by removing trailing slashes
-function normalizeBaseUrl(url) {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
-}
-
-// Utility function to create proper headers for Medusa API
-function createHeaders(apiKey) {
-  
-  return {
-    
-      Authorization: `Basic ${
-        Buffer.from(`${apiKey}:`).toString("base64")
-      }`,
-  
-    'Content-Type': 'application/json'
-  };
-}
-
-// Utility function to make API requests
-async function makeRequest(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers
-    }
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
-  }
-  
-  return await response.json();
-}
+import { appendQueryParam, createHeaders, hasMedusaCredentials, makeRequest, missingCredentialsMessage, normalizeBaseUrl } from "../../lib/medusa-client.js";
 
 /**
  * Function to list orders with filtering and pagination.
@@ -63,10 +28,10 @@ async function makeRequest(url, options = {}) {
 const listOrders = async (args = {}) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
   //console.log(`base url: ${baseUrl}`)
   //console.log(`api key: ${apiKey}`)
@@ -74,10 +39,8 @@ const listOrders = async (args = {}) => {
     const url = new URL(`${baseUrl}/admin/orders`);
     
     // Add query parameters
-    Object.keys(args).forEach(key => {
-      if (args[key] !== undefined && args[key] !== null) {
-        url.searchParams.append(key, args[key]);
-      }
+    Object.entries(args).forEach(([key, value]) => {
+      appendQueryParam(url.searchParams, key, value);
     });
 
     const data = await makeRequest(url.toString(), {
@@ -102,10 +65,10 @@ const listOrders = async (args = {}) => {
 const getOrder = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
@@ -137,10 +100,10 @@ const getOrder = async (args) => {
 const cancelOrder = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
@@ -172,10 +135,10 @@ const cancelOrder = async (args) => {
 const completeOrder = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
@@ -207,10 +170,10 @@ const completeOrder = async (args) => {
 const archiveOrder = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
@@ -243,10 +206,10 @@ const archiveOrder = async (args) => {
 const transferOrder = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
@@ -283,10 +246,10 @@ const transferOrder = async (args) => {
 const listOrderFulfillments = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
@@ -294,7 +257,7 @@ const listOrderFulfillments = async (args) => {
   }
 
   try {
-    const url = `${baseUrl}/admin/orders/${args.id}?expand=fulfillments`;
+    const url = `${baseUrl}/admin/orders/${args.id}?fields=*fulfillments`;
 
     const data = await makeRequest(url, {
       method: 'GET',
@@ -319,10 +282,10 @@ const listOrderFulfillments = async (args) => {
 const cancelFulfillment = async (args) => {
   const rawBaseUrl = process.env.MEDUSA_BASE_URL || 'http://localhost:9000';
   const baseUrl = normalizeBaseUrl(rawBaseUrl);
-  const apiKey = process.env.MEDUSA_API_KEY;
+  const apiKey = process.env.MEDUSA_API_KEY || process.env.MEDUSA_JWT || process.env.MEDUSA_SESSION_COOKIE || process.env.MEDUSA_COOKIE;
 
-  if (!baseUrl || !apiKey) {
-    return { error: 'Medusa credentials not configured. Please set MEDUSA_BASE_URL and MEDUSA_API_KEY environment variables.' };
+  if (!baseUrl || !apiKey || !hasMedusaCredentials()) {
+    return { error: missingCredentialsMessage() };
   }
 
   if (!args.id) {
